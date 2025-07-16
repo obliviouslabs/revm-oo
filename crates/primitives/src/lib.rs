@@ -32,3 +32,32 @@ pub use alloy_primitives::{
 pub type StorageKey = U256;
 /// type alias for storage values
 pub type StorageValue = U256;
+
+use bytemuck::{Pod, Zeroable};
+use rostl_primitives::traits::{Cmov, _Cmovbase};
+
+#[repr(transparent)]
+#[derive(Copy, Clone, Default)]
+pub struct OU256(pub U256);
+
+unsafe impl Zeroable for OU256 {}
+unsafe impl Pod for OU256 {}
+
+use rostl_primitives::{impl_cmov_for_pod, cmov_body, cxchg_body};
+impl_cmov_for_pod!(OU256);
+
+impl From<U256> for OU256 {
+    fn from(x: U256) -> Self {
+        OU256(x)
+    }
+}
+
+impl From<OU256> for U256 {
+    fn from(x: OU256) -> Self {
+        x.0
+    }
+}
+
+// Define a constant for zero and one:
+pub const OU256_ZERO: OU256 = OU256(U256::ZERO);
+pub const OU256_ONE: OU256 = OU256(U256::ONE);

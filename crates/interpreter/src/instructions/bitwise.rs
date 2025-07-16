@@ -5,7 +5,8 @@ use crate::{
     InstructionContext,
 };
 use core::cmp::Ordering;
-use primitives::U256;
+use primitives::{OU256, OU256_ZERO, U256};
+use rostl_primitives::traits::Cmov;
 
 /// Implements the LT instruction - less than comparison.
 pub fn lt<WIRE: InterpreterTypes, H: ?Sized>(context: InstructionContext<'_, H, WIRE>) {
@@ -118,12 +119,12 @@ pub fn byte<WIRE: InterpreterTypes, H: ?Sized>(context: InstructionContext<'_, H
     popn_top!([op1], op2, context.interpreter);
 
     let o1 = as_usize_saturated!(op1);
-    *op2 = if o1 < 32 {
-        // `31 - o1` because `byte` returns LE, while we want BE
-        U256::from(op2.byte(31 - o1))
-    } else {
-        U256::ZERO
-    };
+    let mut idx = o1;
+    idx.cmov(&0, o1 > 31);
+    let mut ret: OU256 = op2.clone().into(); 
+    ret.0 = U256::from(op2.byte(31 - idx));
+    ret.cmov(&OU256_ZERO, o1 > 31);
+    *op2 = ret.0;
 }
 
 /// EIP-145: Bitwise shifting instructions in EVM

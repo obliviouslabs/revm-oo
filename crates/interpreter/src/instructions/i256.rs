@@ -1,5 +1,6 @@
-use core::cmp::Ordering;
+use core::{cmp::Ordering, mem};
 use primitives::U256;
+use rostl_primitives::traits::Cmov;
 
 /// Represents the sign of a 256-bit signed integer value.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -79,12 +80,14 @@ pub fn two_compl(op: U256) -> U256 {
 pub fn i256_cmp(first: &U256, second: &U256) -> Ordering {
     let first_sign = i256_sign(first);
     let second_sign = i256_sign(second);
-    match first_sign.cmp(&second_sign) {
-        // Note: Adding `if first_sign != Sign::Zero` to short circuit zero comparisons performs
-        // slower on average, as of #582
-        Ordering::Equal => first.cmp(second),
-        o => o,
-    }
+    
+    let ordering: Ordering = first_sign.cmp(&second_sign);
+    let ordering_2: Ordering = first.cmp(second);
+    let r1 = ordering == Ordering::Equal;
+    let mut ret: i8 = ordering as i8;
+    ret.cmov(&(ordering_2 as i8), r1);
+
+    unsafe { mem::transmute::<i8, Ordering>(ret) }
 }
 
 /// Performs signed division of two 256-bit integers.

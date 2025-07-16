@@ -21,6 +21,8 @@ workspace = true
 bytecode.workspace = true
 primitives.workspace = true
 context-interface.workspace = true
+rostl-primitives.workspace = true
+bytemuck.workspace = true
 
 # optional
 serde = { workspace = true, features = ["derive", "rc"], optional = true }

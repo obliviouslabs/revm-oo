@@ -20,6 +20,10 @@ workspace = true
 # alloy
 alloy-primitives = { workspace = true, features = ["rlp", "map"] }
 
+# rostl
+rostl-primitives.workspace = true
+bytemuck.workspace = true
+
 # mics
 num_enum = { version = "0.7.3", default-features = false }
 

@@ -4,7 +4,8 @@ use crate::{
     interpreter_types::{InterpreterTypes, RuntimeFlag, StackTr},
     InstructionContext,
 };
-use primitives::U256;
+use primitives::{OU256, OU256_ONE, U256};
+use rostl_primitives::traits::{Cmov};
 
 /// Implements the ADD instruction - adds two values from stack.
 pub fn add<WIRE: InterpreterTypes, H: ?Sized>(context: InstructionContext<'_, H, WIRE>) {
@@ -31,9 +32,12 @@ pub fn sub<WIRE: InterpreterTypes, H: ?Sized>(context: InstructionContext<'_, H,
 pub fn div<WIRE: InterpreterTypes, H: ?Sized>(context: InstructionContext<'_, H, WIRE>) {
     gas!(context.interpreter, gas::LOW);
     popn_top!([op1], op2, context.interpreter);
-    if !op2.is_zero() {
-        *op2 = op1.wrapping_div(*op2);
-    }
+    let mut op3 : OU256 = op2.clone().into();
+    let is_zero = op3.0.is_zero();
+    op3.cmov(&OU256_ONE, is_zero);
+    op3.0 = op1.wrapping_div(op3.0);
+    op3.cmov(&((*op2).into()), is_zero);
+    *op2 = op3.0;
 }
 
 /// Implements the SDIV instruction.
@@ -51,9 +55,12 @@ pub fn sdiv<WIRE: InterpreterTypes, H: ?Sized>(context: InstructionContext<'_, H
 pub fn rem<WIRE: InterpreterTypes, H: ?Sized>(context: InstructionContext<'_, H, WIRE>) {
     gas!(context.interpreter, gas::LOW);
     popn_top!([op1], op2, context.interpreter);
-    if !op2.is_zero() {
-        *op2 = op1.wrapping_rem(*op2);
-    }
+    let mut op3 : OU256 = op2.clone().into();
+    let is_zero = op3.0.is_zero();
+    op3.cmov(&OU256_ONE, is_zero);
+    op3.0 = op1.wrapping_rem(op3.0);
+    op3.cmov(&((*op2).into()), is_zero);
+    *op2 = op3.0;
 }
 
 /// Implements the SMOD instruction.
@@ -129,6 +136,8 @@ pub fn signextend<WIRE: InterpreterTypes, H: ?Sized>(context: InstructionContext
         let bit_index = (8 * ext + 7) as usize;
         let bit = x.bit(bit_index);
         let mask = (U256::from(1) << bit_index) - U256::from(1);
-        *x = if bit { *x | !mask } else { *x & mask };
+        let mut ret: OU256  = (*x & mask).into();
+        ret.cmov(&(*x | !mask).into(), bit);
+        *x = ret.0;
     }
 }

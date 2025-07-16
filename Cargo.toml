@@ -54,6 +54,13 @@ context-interface = { path = "crates/context/interface", package = "revm-context
 handler = { path = "crates/handler", package = "revm-handler", version = "7.0.1", default-features = false }
 op-revm = { path = "crates/op-revm", package = "op-revm", version = "7.0.1", default-features = false }
 
+rostl-datastructures = { git = "https://github.com/obliviouslabs/rostl.git" }
+rostl-oram = { git = "https://github.com/obliviouslabs/rostl.git" }
+rostl-primitives = { git = "https://github.com/obliviouslabs/rostl.git" }
+rostl-sort = { git = "https://github.com/obliviouslabs/rostl.git" }
+bytemuck = { version = "1.22.0", features = ["derive"] }
+
+
 # alloy
 alloy-eip2930 = { version = "0.2.1", default-features = false }
 alloy-eip7702 = { version = "0.6.1", default-features = false }
